@@ -366,8 +366,24 @@ CREATE SECURITY INTEGRATION IF NOT EXISTS GEMINI_PLUGIN_OAUTH
 -- SELECT SYSTEM$SHOW_OAUTH_CLIENT_SECRETS('GEMINI_PLUGIN_OAUTH');
 
 -- -----------------------------------------------------------------------------
--- 9. Tester users (fill in after agreeing sign-in method with Google)
+-- 9. Tester users (Google Gemini Factory)
+--    Passwords are set separately with a random value and shared privately.
+--    The user-level network policy lets testers and Gemini's OAuth calls through
+--    without changing the account network policy.
 -- -----------------------------------------------------------------------------
--- CREATE USER IF NOT EXISTS SUNNYWALIA LOGIN_NAME = 'sunnywalia@google.com' EMAIL = 'sunnywalia@google.com'
---   DEFAULT_ROLE = GEMINI_PLUGIN_ROLE DEFAULT_WAREHOUSE = GEMINI_WH MUST_CHANGE_PASSWORD = TRUE PASSWORD = '<set securely>';
--- GRANT ROLE GEMINI_PLUGIN_ROLE TO USER SUNNYWALIA;
+CREATE USER IF NOT EXISTS SUNNYWALIA LOGIN_NAME = 'sunnywalia@google.com' EMAIL = 'sunnywalia@google.com'
+  DISPLAY_NAME = 'Sunny Walia (Google)' TYPE = PERSON
+  DEFAULT_ROLE = GEMINI_PLUGIN_ROLE DEFAULT_WAREHOUSE = GEMINI_WH MUST_CHANGE_PASSWORD = TRUE;
+CREATE USER IF NOT EXISTS UNNAYANJAIN LOGIN_NAME = 'unnayanjain@google.com' EMAIL = 'unnayanjain@google.com'
+  DISPLAY_NAME = 'Unnayan Jain (Google)' TYPE = PERSON
+  DEFAULT_ROLE = GEMINI_PLUGIN_ROLE DEFAULT_WAREHOUSE = GEMINI_WH MUST_CHANGE_PASSWORD = TRUE;
+GRANT ROLE GEMINI_PLUGIN_ROLE TO USER SUNNYWALIA;
+GRANT ROLE GEMINI_PLUGIN_ROLE TO USER UNNAYANJAIN;
+
+CREATE NETWORK RULE IF NOT EXISTS GEMINI_DEMO.TPCH.GEMINI_TESTERS_ALLOW_ALL
+  MODE = INGRESS TYPE = IPV4 VALUE_LIST = ('0.0.0.0/0') COMMENT = 'Google Gemini tester users only';
+CREATE NETWORK POLICY IF NOT EXISTS GEMINI_TESTERS_POLICY
+  ALLOWED_NETWORK_RULE_LIST = ('GEMINI_DEMO.TPCH.GEMINI_TESTERS_ALLOW_ALL')
+  COMMENT = 'Applied only to Google Gemini tester users';
+ALTER USER SUNNYWALIA  SET NETWORK_POLICY = GEMINI_TESTERS_POLICY;
+ALTER USER UNNAYANJAIN SET NETWORK_POLICY = GEMINI_TESTERS_POLICY;
