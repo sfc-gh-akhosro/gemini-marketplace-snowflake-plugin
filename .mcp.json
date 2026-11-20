@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "snowflake": {
+      "type": "http",
+      "url": "https://sfsenorthamerica-akhosro-gcp.snowflakecomputing.com/api/v2/databases/GEMINI_DEMO/schemas/TPCH/mcp-servers/GEMINI_PLUGIN_MCP"
+    }
+  }
+}

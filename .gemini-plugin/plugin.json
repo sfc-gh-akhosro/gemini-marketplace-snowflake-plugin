@@ -1,0 +1,22 @@
+{
+  "name": "snowflake-data-cloud",
+  "displayName": "Snowflake",
+  "version": "0.1.0",
+  "description": "Query governed Snowflake data in natural language, search policy documents, ask a Cortex Agent, and manage support tickets from Gemini.",
+  "author": {
+    "name": "Snowflake Inc.",
+    "email": "ali.khosro@snowflake.com",
+    "url": "https://www.snowflake.com"
+  },
+  "repository": "https://github.com/sfc-gh-akhosro/gemini-marketplace-snowflake-plugin",
+  "homepage": "https://www.snowflake.com/en/developers/guides/quickstart-iceberg-cortex-gemini/",
+  "license": "Apache-2.0",
+  "keywords": ["snowflake", "data-warehouse", "sql", "cortex", "analytics"],
+  "skills": [
+    "./skills/snowflake-query-data/SKILL.md",
+    "./skills/snowflake-search-documents/SKILL.md",
+    "./skills/snowflake-ask-agent/SKILL.md",
+    "./skills/snowflake-manage-records/SKILL.md"
+  ],
+  "mcpServers": "./.mcp.json"
+}
