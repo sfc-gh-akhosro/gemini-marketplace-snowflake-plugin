@@ -2,6 +2,12 @@
 
 All notable changes follow [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-11-23
+
+### Fixed
+- `tpch_sales_analyst` now runs on a Cortex Agent (`TPCH_SALES_AGENT`) and returns answers. It previously returned only generated SQL.
+- Gemini's OAuth token exchange is no longer blocked by the account network policy.
+
 ## [0.1.0] - 2026-11-20
 
 ### Added

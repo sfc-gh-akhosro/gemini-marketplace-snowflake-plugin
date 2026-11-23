@@ -16,7 +16,7 @@ Snowflake's launch-partner plugin for the Gemini Agent plugin marketplace (targe
 
 | Skill | MCP tool | Backed by | Mode |
 | --- | --- | --- | --- |
-| `snowflake-query-data` | `tpch_sales_analyst` | Cortex Analyst on semantic view `TPCH_SALES_SV` | Read |
+| `snowflake-query-data` | `tpch_sales_analyst` | Cortex Agent `TPCH_SALES_AGENT` (Analyst on semantic view `TPCH_SALES_SV`) | Read |
 | `snowflake-search-documents` | `support_docs_search` | Cortex Search service `SUPPORT_DOCS_SEARCH` | Read |
 | `snowflake-ask-agent` | `tpch_business_agent` | Cortex Agent `TPCH_BUSINESS_AGENT` | Read |
 | `snowflake-manage-records` | `create_support_ticket`, `update_ticket_status` | Stored procedures | Write |

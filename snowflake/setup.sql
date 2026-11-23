@@ -229,6 +229,31 @@ CREATE OR REPLACE SEMANTIC VIEW TPCH_SALES_SV
 GRANT SELECT ON SEMANTIC VIEW TPCH_SALES_SV TO ROLE GEMINI_PLUGIN_ROLE;
 
 -- -----------------------------------------------------------------------------
+-- 6a. Sales agent (Analyst only). Exposed as MCP tool tpch_sales_analyst.
+--     A direct CORTEX_ANALYST_MESSAGE tool only returns SQL; the agent runs it.
+-- -----------------------------------------------------------------------------
+CREATE OR REPLACE AGENT TPCH_SALES_AGENT
+  COMMENT = 'Answers single quantitative questions about TPC-H orders, revenue, customers, segments, nations and regions. Does not cover policy documents.'
+  FROM SPECIFICATION $$
+  instructions:
+    response: "Answer in one or two sentences. Lead with the number or ranking. Format currency with $ and thousands separators. Mention that 1998 data is partial (ends August 1998) only when the answer includes 1998 or a trend across years."
+    orchestration: "Always use sales_analyst to answer. Never estimate numbers."
+  tools:
+    - tool_spec:
+        type: cortex_analyst_text_to_sql
+        name: sales_analyst
+        description: "TPC-H sales data: orders, revenue, customers, market segments, nations, regions, order status and priority."
+  tool_resources:
+    sales_analyst:
+      semantic_view: GEMINI_DEMO.TPCH.TPCH_SALES_SV
+      execution_environment:
+        type: warehouse
+        warehouse: GEMINI_WH
+  $$;
+
+GRANT USAGE ON AGENT TPCH_SALES_AGENT TO ROLE GEMINI_PLUGIN_ROLE;
+
+-- -----------------------------------------------------------------------------
 -- 6. Cortex Agent (orchestrates Analyst + Search)
 -- -----------------------------------------------------------------------------
 CREATE OR REPLACE AGENT TPCH_BUSINESS_AGENT
@@ -271,9 +296,13 @@ CREATE OR REPLACE MCP SERVER GEMINI_DEMO.TPCH.GEMINI_PLUGIN_MCP
   tools:
     - name: "tpch_sales_analyst"
       title: "TPC-H Sales Analyst"
-      type: "CORTEX_ANALYST_MESSAGE"
-      identifier: "GEMINI_DEMO.TPCH.TPCH_SALES_SV"
-      description: "Answers natural-language questions about TPC-H orders, revenue, customers, market segments, nations and regions by generating SQL over a governed semantic view."
+      type: "CORTEX_AGENT_RUN"
+      identifier: "GEMINI_DEMO.TPCH.TPCH_SALES_AGENT"
+      description: "Answers natural-language questions about TPC-H orders, revenue, customers, market segments, nations and regions by running governed SQL over a semantic view and returning the result."
+      annotations:
+        readOnlyHint: true
+        destructiveHint: false
+        openWorldHint: false
     - name: "support_docs_search"
       title: "Support Docs Search"
       type: "CORTEX_SEARCH_SERVICE_QUERY"

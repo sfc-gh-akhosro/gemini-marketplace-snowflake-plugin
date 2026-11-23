@@ -1,6 +1,6 @@
 ---
 name: snowflake-query-data
-description: Answers quantitative questions about Snowflake TPC-H sales data (orders, revenue, average order value, customers, market segments, nations, regions, order status and priority) by calling the tpch_sales_analyst tool, which generates governed SQL over the TPCH_SALES_SV semantic view. Use when the user asks to "count orders", "show revenue by region", "which segment earns the most", "top customers by spend", "how many open orders", or any single metric, ranking, or breakdown over the sales data. Don't use for policy or documentation questions (use snowflake-search-documents), questions that combine data with policy or need a narrative across several steps (use snowflake-ask-agent), or creating and updating support tickets (use snowflake-manage-records).
+description: Answers quantitative questions about Snowflake TPC-H sales data (orders, revenue, average order value, customers, market segments, nations, regions, order status and priority) by calling the tpch_sales_analyst tool, a Snowflake Cortex Agent that runs governed SQL over the TPCH_SALES_SV semantic view and returns the result. Use when the user asks to "count orders", "show revenue by region", "which segment earns the most", "top customers by spend", "how many open orders", or any single metric, ranking, or breakdown over the sales data. Don't use for policy or documentation questions (use snowflake-search-documents), questions that combine data with policy or need a narrative across several steps (use snowflake-ask-agent), or creating and updating support tickets (use snowflake-manage-records).
 ---
 
 # Snowflake Query Data
@@ -12,7 +12,7 @@ the `tpch_sales_analyst` tool. Never estimate or invent numbers.
 
 | Tool Name | Mode | Purpose & Required Inputs |
 | :--- | :--- | :--- |
-| `tpch_sales_analyst` | Read (`readOnlyHint: true`) | Converts a natural-language question into SQL over the `GEMINI_DEMO.TPCH.TPCH_SALES_SV` semantic view, runs it, and returns the SQL plus results. Input: `message` (the question as text). |
+| `tpch_sales_analyst` | Read (`readOnlyHint: true`) | Cortex Agent `GEMINI_DEMO.TPCH.TPCH_SALES_AGENT`. Turns a natural-language question into SQL over the `GEMINI_DEMO.TPCH.TPCH_SALES_SV` semantic view, runs it, and returns the answer with its data. Input: `text` (the question). For a follow-up, also pass `thread_id` and `parent_message_id` from the previous result. |
 
 ## What the Data Covers
 
@@ -44,7 +44,7 @@ The view does not cover suppliers, parts, line items, or support tickets.
      to `snowflake-ask-agent`.
 
 2. **Execute Scoped Read Query**
-   - Call `tpch_sales_analyst` once, with the user's question as `message`.
+   - Call `tpch_sales_analyst` once, with the user's question as `text`.
    - Rewrite the question only to make it explicit:
      - Resolve relative years against the data range. "Last year in the data" means 1998,
        which is partial and ends in August.
@@ -54,10 +54,10 @@ The view does not cover suppliers, parts, line items, or support tickets.
      user asked for.
 
 3. **Validate the Result**
-   - Check that the returned SQL filters and groups the way the user asked (year, segment,
-     region, status).
-   - If the tool returns a clarification request, or the SQL clearly answers a different
-     question, ask the user one short clarifying question. Do not retry blindly.
+   - Check that the answer covers what the user asked (year, segment, region, status). The
+     result also includes the SQL that was run; use it to confirm filters if the answer looks off.
+   - If the tool returns a clarification request, or clearly answers a different question, ask
+     the user one short clarifying question. Do not retry blindly.
    - If the result is empty, say so and suggest the nearest valid filter (for example, a year
      inside 1992-1998).
 
@@ -67,7 +67,7 @@ The view does not cover suppliers, parts, line items, or support tickets.
      for large totals, and give the exact value when the user asks for one number.
    - For rankings, use a short list or a small table.
    - Mention the 1998 partial-year caveat whenever 1998 appears in a trend.
-   - Offer the generated SQL if the user wants to see how the number was computed.
+   - Offer the SQL that was run if the user wants to see how the number was computed.
 
 ## Examples
 
@@ -80,8 +80,8 @@ The view does not cover suppliers, parts, line items, or support tickets.
 
 ## Error Handling
 
-- **Permission or authorization error:** the user's Snowflake role lacks access to the
-  semantic view. Tell the user to ask their Snowflake admin for the `GEMINI_PLUGIN_ROLE` role.
+- **Permission or authorization error:** the user's Snowflake role lacks access to the agent
+  or semantic view. Tell the user to ask their Snowflake admin for the `GEMINI_PLUGIN_ROLE` role.
 - **Timeout:** narrow the question (one year, one region, or the top 10) and call once more.
 - **Tool not found:** the MCP connection is not active. Ask the user to reconnect the
   Snowflake plugin and sign in again.
